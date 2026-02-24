@@ -1,6 +1,8 @@
+import csv
 import numpy as np
-from typing import List
+from typing import List, Optional
 from .body import Body
+from .io_utils import write_state
 
 G = 1.0
 EPSILON = 1e-5
@@ -29,8 +31,11 @@ def update_bodies(bodies: List[Body], dt: float) -> None:
         b.velocity += acceleration * dt
         b.position += b.velocity * dt
 
-def simulate(bodies: List[Body], steps: int, dt: float) -> None:
-    for _ in range(steps):
+def simulate(bodies: List[Body], steps: int, dt: float, writer: Optional[csv.writer] = None) -> None:
+    for step in range(steps):
         compute_forces(bodies)
         update_bodies(bodies, dt)
+
+        if writer is not None:
+            write_state(writer, step, bodies)
         
