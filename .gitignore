@@ -1,0 +1,64 @@
+# =========================
+# General
+# =========================
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+*.swo
+
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# uv cache
+.uv/
+
+# Python build
+build/
+dist/
+*.egg-info/
+
+# =========================
+# Rust
+# =========================
+rust/target/
+target/
+**/*.rs.bk
+
+# Cargo
+Cargo.lock
+
+# =========================
+# Data & results (optional)
+# =========================
+results/*
+data/*
+
+# Keep folders
+!results/.gitkeep
+!data/.gitkeep
+
+# =========================
+# IDEs
+# =========================
+.vscode/
+.idea/
+*.iml
+
+# =========================
+# OS
+# =========================
+ehthumbs.db
+Desktop.ini
