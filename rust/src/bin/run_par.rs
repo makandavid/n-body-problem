@@ -11,11 +11,12 @@ fn main() -> std::io::Result<()> {
     let n: usize = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(500);
     let steps: usize = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(100);
     let dt: f64 = args.get(3).and_then(|s| s.parse().ok()).unwrap_or(0.01);
-    let num_threads = std::thread::available_parallelism()
-    .map(|n| n.get())
-    .unwrap_or(1);
+    // let num_threads = std::thread::available_parallelism()
+    // .map(|n| n.get())
+    // .unwrap_or(1);
+    let num_threads = args.get(4).and_then(|s| s.parse().ok()).unwrap_or(1);
 
-    let write_trajectory = args.get(4).map(|s| s == "write_trajectory").unwrap_or(false);
+    let write_trajectory = args.get(5).map(|s| s == "write_trajectory").unwrap_or(false);
 
     let trajectory_path = if write_trajectory {
         let path_string = format!("../data/rust_par_{}_{}.csv", n, steps);
