@@ -6,7 +6,7 @@ use std::thread;
 use crate::body::Body;
 
 pub const G: f64 = 1.0;
-pub const EPSILON: f64 = 1e-5;
+pub const EPSILON: f64 = 1e-2;
 
 pub fn compute_forces_parallel(bodies: &mut [Body], num_threads: usize) {
     let n = bodies.len();

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
-pub type Trajectories = HashMap<usize, Vec<(f64, f64)>>;
+pub type Trajectories = HashMap<usize, Vec<(usize, f64, f64)>>;
 pub type Snapshots = HashMap<usize, Vec<(f64, f64)>>;
 
 pub fn parse_file(path: &str) -> (Trajectories, Snapshots) {
@@ -27,8 +27,12 @@ pub fn parse_file(path: &str) -> (Trajectories, Snapshots) {
         let x: f64 = parts[2].parse().unwrap();
         let y: f64 = parts[3].parse().unwrap();
 
-        trajectories.entry(body_id).or_default().push((x, y));
+        trajectories.entry(body_id).or_default().push((step, x, y));
         snapshots.entry(step).or_default().push((x, y));
+    }
+
+    for (_id, points) in trajectories.iter_mut() {
+        points.sort_by_key(|(step, _, _)| *step);
     }
 
     (trajectories, snapshots)

@@ -2,7 +2,7 @@ use plotters::prelude::*;
 use std::collections::HashMap;
 
 pub fn plot_trajectories(
-    trajectories: &HashMap<usize, Vec<(f64, f64)>>
+    trajectories: &HashMap<usize, Vec<(usize, f64, f64)>>
 ) -> Result<(), Box<dyn std::error::Error>> {
 
     let root = BitMapBackend::new("trajectories.png", (800, 800))
@@ -16,8 +16,15 @@ pub fn plot_trajectories(
 
     chart.configure_mesh().draw()?;
 
-    for (_id, points) in trajectories {
-        chart.draw_series(LineSeries::new(points.clone(), &BLUE))?;
+    let colors = [&RED, &BLUE, &GREEN, &CYAN, &MAGENTA];
+
+    for (i, (_id, points)) in trajectories.iter().enumerate() {
+        let color = colors[i % colors.len()];
+
+        let ordered: Vec<(f64, f64)> =
+            points.iter().map(|(_, x, y)| (*x, *y)).collect();
+
+        chart.draw_series(LineSeries::new(ordered, color))?;
     }
 
     Ok(())
