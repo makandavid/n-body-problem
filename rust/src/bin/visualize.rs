@@ -14,7 +14,7 @@ fn main() {
     plot_trajectories(&trajectories).unwrap();
 
     if let Some(last_step) = snapshots.keys().max() {
-        plot_snapshot(&snapshots[last_step], "snapshot.png").unwrap();
+        plot_snapshot(&snapshots[last_step], "../visualizations/snapshot.png").unwrap();
     }
 
     generate_frames(&snapshots);
