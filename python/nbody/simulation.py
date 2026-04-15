@@ -5,7 +5,8 @@ from .body import Body
 from .io_utils import write_state
 
 G = 1.0
-EPSILON = 1e-5
+EPSILON = 1e-2
+MAX_SPEED = 50.0
 
 def compute_forces(bodies: List[Body]) -> None:
     n = len(bodies)
@@ -29,6 +30,11 @@ def update_bodies(bodies: List[Body], dt: float) -> None:
     for b in bodies:
         acceleration = b.force / b.mass
         b.velocity += acceleration * dt
+
+        speed = np.linalg.norm(b.velocity)
+        if speed > MAX_SPEED:
+            b.velocity *= MAX_SPEED / speed
+
         b.position += b.velocity * dt
 
 def simulate(bodies: List[Body], steps: int, dt: float, writer: Optional[csv.writer] = None) -> None:

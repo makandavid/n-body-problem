@@ -20,16 +20,13 @@ def generate_bodies(n: int, seed: int = 42) -> List[Body]:
 
     for _ in range(1, n):
         angle = rng.random() * 2 * np.pi
-        r = rng.random() * radius
+        r = (rng.random() ** 0.5) * radius
+        r = max(r, 1.0)
 
         x = r * np.cos(angle)
         y = r * np.sin(angle)
 
-        # Avoid division by zero (same as r.max(1.0) in Rust)
-        r_safe = max(r, 1.0)
-
-        # Circular orbit velocity
-        speed = np.sqrt(G * center_mass / r_safe)
+        speed = np.sqrt(G * center_mass / r)
 
         vx = -speed * np.sin(angle)
         vy =  speed * np.cos(angle)

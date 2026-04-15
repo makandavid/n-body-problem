@@ -18,7 +18,6 @@ pub fn compute_forces_parallel(bodies: &mut [Body], num_threads: usize) {
 
     // Shared read-only snapshot
     let bodies_arc = Arc::new(bodies.to_vec());
-
     let chunk_size = (n + num_threads - 1) / num_threads;
 
     let mut handles = vec![];
@@ -81,12 +80,20 @@ pub fn compute_forces_parallel(bodies: &mut [Body], num_threads: usize) {
 }
 
 pub fn update_bodies(bodies: &mut [Body], dt: f64) {
+    let max_speed = 50.0;
+
     for b in bodies.iter_mut() {
         let ax = b.force[0] / b.mass;
         let ay = b.force[1] / b.mass;
 
         b.velocity[0] += ax * dt;
         b.velocity[1] += ay * dt;
+
+        let speed = (b.velocity[0].powi(2) + b.velocity[1].powi(2)).sqrt();
+        if speed > max_speed {
+            b.velocity[0] *= max_speed / speed;
+            b.velocity[1] *= max_speed / speed;
+        }
 
         b.position[0] += b.velocity[0] * dt;
         b.position[1] += b.velocity[1] * dt;

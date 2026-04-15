@@ -16,7 +16,7 @@ pub fn generate_bodies(n: usize, seed: u64) -> Vec<Body> {
 
     for _ in 1..n {
         let angle = rng.gen::<f64>() * std::f64::consts::TAU;
-        let r = rng.gen::<f64>() * radius;
+        let r = (rng.gen::<f64>() * radius).max(1.0);
 
         let x = r * angle.cos();
         let y = r * angle.sin();
