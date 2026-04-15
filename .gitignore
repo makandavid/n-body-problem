@@ -45,6 +45,7 @@ Cargo.lock
 # =========================
 results/*
 data/*
+frames/*
 
 # Keep folders
 !results/.gitkeep
