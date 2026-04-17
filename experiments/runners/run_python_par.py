@@ -10,6 +10,16 @@ import argparse
 from python.nbody.generator import generate_bodies
 from python.nbody.parallel_simulation import simulate_parallel
 
+RESULTS_FILE = Path("experiments/results/python_benchmarks.csv")
+HEADER = ["language", "mode", "n_bodies", "steps", "dt", "workers", "time_s"]
+
+
+def ensure_header(path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not path.exists() or path.stat().st_size == 0:
+        with path.open("w", newline="") as f:
+            csv.writer(f).writerow(HEADER)
+
 def run_simulation(n_bodies: int, n_steps: int, dt: float, num_workers: int, write_trajectory: bool = True) -> float:
     bodies = generate_bodies(n_bodies)
 
@@ -25,8 +35,7 @@ def run_simulation(n_bodies: int, n_steps: int, dt: float, num_workers: int, wri
 
     start = time.perf_counter()
     simulate_parallel(bodies, n_steps, dt, num_workers, writer)
-    end = time.perf_counter()
-    elapsed = end - start
+    elapsed = time.perf_counter() - start
 
     if output_file is not None:
         output_file.close()
@@ -37,7 +46,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run Python parallel N-body simulation.")
     parser.add_argument("--n", type=int, default=500)
     parser.add_argument("--steps", type=int, default=100)
-    parser.add_argument("--dt", type=float, default=0.01)
+    parser.add_argument("--dt", type=float, default=0.001)
     parser.add_argument("--workers", type=int, default=cpu_count())
     parser.add_argument("--write_trajectory", action="store_true")
 
@@ -48,12 +57,9 @@ def main() -> None:
     print(f"[PYTHON PAR] N={args.n}, steps={args.steps}, dt={args.dt}, workers={args.workers}")
     print(f"Execution time: {elapsed:.6f} s")
 
-    results_file = Path("experiments/results/python_benchmarks.csv")
-    results_file.parent.mkdir(parents=True, exist_ok=True)
-
-    with results_file.open("a", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow(["python", "parallel", args.n, args.steps, args.dt, args.workers, elapsed])
+    ensure_header(RESULTS_FILE)
+    with RESULTS_FILE.open("a", newline="") as f:
+        csv.writer(f).writerow(["python", "parallel", args.n, args.steps, args.dt, args.workers, elapsed])
 
 
 if __name__ == "__main__":

@@ -4,9 +4,9 @@ use std::sync::Arc;
 use std::thread;
 
 use crate::body::Body;
+use crate::generator::G;
 
-pub const G: f64 = 1.0;
-pub const EPSILON: f64 = 1e-2;
+pub const EPSILON: f64 = 0.5;
 
 pub fn compute_forces_parallel(bodies: &mut [Body], num_threads: usize) {
     let n = bodies.len();
@@ -29,29 +29,24 @@ pub fn compute_forces_parallel(bodies: &mut [Body], num_threads: usize) {
         let end = ((t + 1) * chunk_size).min(n);
 
         let handle = thread::spawn(move || {
-            // Each thread keeps FULL force array (important!)
-            let mut local_forces = vec![[0.0; 2]; bodies_clone.len()];
+            let mut local_forces = vec![[0.0f64; 2]; bodies_clone.len()];
 
             for i in start..end {
-                for j in (i + 1)..bodies_clone.len() {
+                // j goes over ALL other bodies, but we only write to local_forces[i]
+                // No symmetric write to j — avoids double-counting on merge
+                for j in 0..bodies_clone.len() {
+                    if i == j { continue; }
+
                     let dx = bodies_clone[j].position[0] - bodies_clone[i].position[0];
                     let dy = bodies_clone[j].position[1] - bodies_clone[i].position[1];
 
-                    let dist_sq = dx * dx + dy * dy + EPSILON;
+                    let dist_sq = dx * dx + dy * dy + EPSILON * EPSILON;
                     let dist = dist_sq.sqrt();
 
-                    let force_mag =
-                        G * bodies_clone[i].mass * bodies_clone[j].mass / dist_sq;
+                    let force_mag = G * bodies_clone[i].mass * bodies_clone[j].mass / dist_sq;
 
-                    let fx = force_mag * dx / dist;
-                    let fy = force_mag * dy / dist;
-
-                    // Apply to both i and j (symmetry)
-                    local_forces[i][0] += fx;
-                    local_forces[i][1] += fy;
-
-                    local_forces[j][0] -= fx;
-                    local_forces[j][1] -= fy;
+                    local_forces[i][0] += force_mag * dx / dist;
+                    local_forces[i][1] += force_mag * dy / dist;
                 }
             }
 
@@ -62,7 +57,7 @@ pub fn compute_forces_parallel(bodies: &mut [Body], num_threads: usize) {
     }
 
     // Merge all thread results
-    let mut total_forces = vec![[0.0; 2]; n];
+    let mut total_forces = vec![[0.0f64; 2]; n];
 
     for handle in handles {
         let local = handle.join().unwrap();
@@ -80,20 +75,12 @@ pub fn compute_forces_parallel(bodies: &mut [Body], num_threads: usize) {
 }
 
 pub fn update_bodies(bodies: &mut [Body], dt: f64) {
-    let max_speed = 50.0;
-
     for b in bodies.iter_mut() {
         let ax = b.force[0] / b.mass;
         let ay = b.force[1] / b.mass;
 
         b.velocity[0] += ax * dt;
         b.velocity[1] += ay * dt;
-
-        let speed = (b.velocity[0].powi(2) + b.velocity[1].powi(2)).sqrt();
-        if speed > max_speed {
-            b.velocity[0] *= max_speed / speed;
-            b.velocity[1] *= max_speed / speed;
-        }
 
         b.position[0] += b.velocity[0] * dt;
         b.position[1] += b.velocity[1] * dt;

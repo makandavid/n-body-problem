@@ -2,6 +2,8 @@ import numpy as np
 from typing import List
 from .body import Body
 
+G = 1.0
+
 def generate_bodies(n: int, seed: int = 42) -> List[Body]:
     rng = np.random.default_rng(seed)
 
@@ -9,7 +11,6 @@ def generate_bodies(n: int, seed: int = 42) -> List[Body]:
 
     radius = 50.0
     center_mass = 1000.0
-    G = 1.0
 
     # Central massive body
     bodies.append(Body(
@@ -31,10 +32,16 @@ def generate_bodies(n: int, seed: int = 42) -> List[Body]:
         vx = -speed * np.sin(angle)
         vy =  speed * np.cos(angle)
 
+        perturb = 0.05
+        dvx = (rng.random() - 0.5) * perturb * speed
+        dvy = (rng.random() - 0.5) * perturb * speed
+
+        mass = 0.5 + rng.random() * 1.5
+
         bodies.append(Body(
-            mass=1.0,
+            mass=mass,
             position=np.array([x, y]),
-            velocity=np.array([vx, vy])
+            velocity=np.array([vx + dvx, vy + dvy])
         ))
 
     return bodies

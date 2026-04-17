@@ -2,9 +2,9 @@ use std::fs::File;
 use std::io::BufWriter;
 
 use crate::body::Body;
+use crate::generator::G;
 
-pub const G: f64 = 1.0;
-pub const EPSILON: f64 = 1e-2;
+pub const EPSILON: f64 = 0.5;
 
 pub fn compute_forces(bodies: &mut [Body]) {
     let n = bodies.len();
@@ -18,7 +18,7 @@ pub fn compute_forces(bodies: &mut [Body]) {
             let dx = bodies[j].position[0] - bodies[i].position[0];
             let dy = bodies[j].position[1] - bodies[i].position[1];
 
-            let dist_sq = dx * dx + dy * dy + EPSILON;
+            let dist_sq = dx * dx + dy * dy + EPSILON * EPSILON;
             let dist = dist_sq.sqrt();
 
             let force_mag = G * bodies[i].mass * bodies[j].mass / dist_sq;
@@ -36,20 +36,12 @@ pub fn compute_forces(bodies: &mut [Body]) {
 }
 
 pub fn update_bodies(bodies: &mut [Body], dt: f64) {
-    let max_speed = 50.0;
-
     for b in bodies.iter_mut() {
         let ax = b.force[0] / b.mass;
         let ay = b.force[1] / b.mass;
 
         b.velocity[0] += ax * dt;
         b.velocity[1] += ay * dt;
-
-        let speed = (b.velocity[0].powi(2) + b.velocity[1].powi(2)).sqrt();
-        if speed > max_speed {
-            b.velocity[0] *= max_speed / speed;
-            b.velocity[1] *= max_speed / speed;
-        }
 
         b.position[0] += b.velocity[0] * dt;
         b.position[1] += b.velocity[1] * dt;

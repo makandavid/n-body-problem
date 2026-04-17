@@ -4,10 +4,9 @@ from typing import List, Optional
 from multiprocessing import Pool, cpu_count
 from .body import Body
 from .io_utils import write_state
+from .generator import G
 
-G = 1.0
-EPSILON = 1e-2
-MAX_SPEED = 50.0
+EPSILON = 0.5
 
 def compute_forces_chunk(args):
     bodies, start, end = args
@@ -23,7 +22,8 @@ def compute_forces_chunk(args):
                 continue
 
             diff = bj.position - bi.position
-            dist_sq = np.dot(diff, diff) + EPSILON
+
+            dist_sq = np.dot(diff, diff) + EPSILON ** 2
             dist = np.sqrt(dist_sq)
 
             force_mag = G * bi.mass * bj.mass / dist_sq
@@ -58,11 +58,6 @@ def update_bodies(bodies: List[Body], dt: float) -> None:
     for b in bodies:
         acceleration = b.force / b.mass
         b.velocity += acceleration * dt
-
-        speed = np.linalg.norm(b.velocity)
-        if speed > MAX_SPEED:
-            b.velocity *= MAX_SPEED / speed
-
         b.position += b.velocity * dt
 
 def simulate_parallel(bodies: List[Body], steps: int, dt: float, num_workers: int, writer: Optional[csv.writer] = None) -> None:
@@ -72,7 +67,6 @@ def simulate_parallel(bodies: List[Body], steps: int, dt: float, num_workers: in
                 b.reset_force()
 
             compute_forces_parallel(bodies, pool, num_workers)
-
             update_bodies(bodies, dt)
 
             if writer is not None:

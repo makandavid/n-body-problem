@@ -4,6 +4,7 @@ use rust::visualization::snapshot::plot_snapshot;
 use rust::visualization::animation::generate_frames;
 
 use std::env;
+use std::process::Command;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -18,4 +19,26 @@ fn main() {
     }
 
     generate_frames(&snapshots);
+
+    let status = Command::new("ffmpeg")
+        .args([
+            "-y",
+            "-framerate", "30",
+            "-i", "../frames/frame_%04d.png",
+            "-pix_fmt", "yuv420p",
+            "../visualizations/animation.mp4",
+        ])
+        .status();
+
+    match status {
+        Ok(s) if s.success() => {
+            println!("Animation created: animation.mp4");
+        }
+        Ok(_) => {
+            eprintln!("FFmpeg failed to create animation");
+        }
+        Err(e) => {
+            eprintln!("Failed to run FFmpeg: {}", e);
+        }
+    }
 }

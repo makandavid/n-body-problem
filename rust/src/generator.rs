@@ -3,6 +3,8 @@ use rand::{Rng, SeedableRng};
 
 use crate::body::Body;
 
+pub const G: f64 = 1.0;
+
 pub fn generate_bodies(n: usize, seed: u64) -> Vec<Body> {
     let mut rng = StdRng::seed_from_u64(seed);
 
@@ -22,12 +24,20 @@ pub fn generate_bodies(n: usize, seed: u64) -> Vec<Body> {
         let y = r * angle.sin();
 
         // Circular orbit velocity
-        let speed = (1.0 * center_mass / r.max(1.0)).sqrt();
+        let speed = (G * center_mass / r).sqrt();
 
         let vx = -speed * angle.sin();
         let vy = speed * angle.cos();
 
-        bodies.push(Body::new(1.0, [x, y], [vx, vy]));
+        // Small random perturbation
+        let perturb = 0.05;
+        let dvx = (rng.gen::<f64>() - 0.5) * perturb * speed;
+        let dvy = (rng.gen::<f64>() - 0.5) * perturb * speed;
+
+        // Vary body masses slightly so interactions are non-trivial
+        let mass = 0.5 + rng.gen::<f64>() * 1.5; // 0.5 to 2.0
+
+        bodies.push(Body::new(mass, [x, y], [vx + dvx, vy + dvy]));
     }
 
     bodies
