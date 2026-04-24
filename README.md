@@ -12,7 +12,7 @@ The project includes:
 ## Problem Description
 Each body in the system is defined by its:
 - mass,
-- position (2D or 3D),
+- position,
 - velocity.
 
 The solution simulates the system iteratively over a fixed number of time steps. In each iteration, the following steps are performed:

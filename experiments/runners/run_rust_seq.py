@@ -32,6 +32,7 @@ def main() -> None:
     parser.add_argument("--steps", type=int, default=100, help="Number of simulation steps")
     parser.add_argument("--dt", type=float, default=0.001, help="Time delta per step")
     parser.add_argument("--write_trajectory", action="store_true", help="Write trajectory CSV for visualization")
+    parser.add_argument("--runs", type=int, default=1)
     args = parser.parse_args()
 
     cmd = [
@@ -41,14 +42,15 @@ def main() -> None:
     if args.write_trajectory:
         cmd.append("write_trajectory")
 
-    result = subprocess.run(cmd, cwd="rust", check=True, capture_output=True, text=True)
-    print(result.stdout)
-    elapsed = parse_rust_time(result.stdout)
-    print(f"[ORCH] Parsed Rust sequential time: {elapsed:.6f} s")
-
     ensure_header(RESULTS_FILE)
-    with RESULTS_FILE.open("a", newline="") as f:
-        csv.writer(f).writerow(["rust", "sequential", args.n, args.steps, args.dt, 1, f"{elapsed:.6f}"])
+
+    for run_id in range(args.runs):
+        result = subprocess.run(cmd, cwd="rust", check=True, capture_output=True, text=True)
+        print(result.stdout)
+        elapsed = parse_rust_time(result.stdout)
+        print(f"[ORCH] Parsed Rust sequential time {run_id+1}/{args.runs} -> {elapsed:.6f}s")
+        with RESULTS_FILE.open("a", newline="") as f:
+            csv.writer(f).writerow(["rust", "sequential", args.n, args.steps, args.dt, 1, f"{elapsed:.6f}"])
 
 
 if __name__ == "__main__":

@@ -49,17 +49,16 @@ def main() -> None:
     parser.add_argument("--dt", type=float, default=0.001)
     parser.add_argument("--workers", type=int, default=cpu_count())
     parser.add_argument("--write_trajectory", action="store_true")
-
+    parser.add_argument("--runs", type=int, default=1)
     args = parser.parse_args()
 
-    elapsed = run_simulation(args.n, args.steps, args.dt, args.workers, args.write_trajectory)
-
-    print(f"[PYTHON PAR] N={args.n}, steps={args.steps}, dt={args.dt}, workers={args.workers}")
-    print(f"Execution time: {elapsed:.6f} s")
-
     ensure_header(RESULTS_FILE)
-    with RESULTS_FILE.open("a", newline="") as f:
-        csv.writer(f).writerow(["python", "parallel", args.n, args.steps, args.dt, args.workers, elapsed])
+
+    for run_id in range(args.runs):
+        elapsed = run_simulation(args.n, args.steps, args.dt, args.workers, args.write_trajectory)
+        print(f"[PYTHON PAR] run {run_id+1}/{args.runs} N={args.n} steps={args.steps} workers={args.workers} -> {elapsed:.4f}s")
+        with RESULTS_FILE.open("a", newline="") as f:
+            csv.writer(f).writerow(["python", "parallel", args.n, args.steps, args.dt, args.workers, f"{elapsed:.6f}"])
 
 
 if __name__ == "__main__":
